@@ -51,7 +51,12 @@ if (isMissing) {
               <p class="eyebrow">A private proposal from Rocktown Labs</p>
               <h1>{found.businessName}<br /><span>Your new website is ready.</span></h1>
               <p class="hero-copy">A clear, fast website built around how your customers find and contact you.</p>
-              <a class="text-link" href="#options">See your options <span aria-hidden="true">↓</span></a>
+              <div class="hero-actions">
+                {bookingLink ? (
+                  <a class="button button-primary" href={bookingLink} target="_blank" rel="noopener">Book a time ↗</a>
+                ) : null}
+                <a class="text-link" href="#options">See your options <span aria-hidden="true">↓</span></a>
+              </div>
             </div>
             <div class="hero-aside">
               <span class="aside-label">Prepared for</span>

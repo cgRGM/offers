@@ -433,8 +433,15 @@ input:focus {
 .text-link {
   display: inline-flex;
   gap: 10px;
-  margin-top: 8px;
   color: var(--cyan);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-top: 24px;
 }
 
 .hero-aside {
