@@ -1,0 +1,24 @@
+{
+  "name": "@rtloffers/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rtloffers/db": "workspace:*",
+    "better-auth": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@rtloffers/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
