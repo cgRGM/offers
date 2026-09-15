@@ -12,7 +12,7 @@
     "env:generate": "varlock codegen"
   },
   "dependencies": {
-    "@astrojs/node": "^11.1.5",
+    "@astrojs/vercel": "^11.0.10",
     "@rtloffers/auth": "workspace:*",
     "@rtloffers/db": "workspace:*",
     "@varlock/astro-integration": "1.4.1",
