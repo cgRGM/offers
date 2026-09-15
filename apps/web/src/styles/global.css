@@ -520,6 +520,10 @@ input:focus {
   align-items: end;
 }
 
+.two-column-section {
+  align-items: start;
+}
+
 .section-heading h2,
 .two-column-section h2,
 .callout-section h2 {
