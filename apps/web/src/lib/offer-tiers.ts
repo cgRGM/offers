@@ -5,7 +5,7 @@ export const OFFER_TIERS = {
       "Room for custom features and workflows",
       "A clear plan before work begins",
     ],
-    depositCents: 50_000,
+    depositCents: 125_000,
     label: "Grow",
     monthlyCents: 14_900,
     totalCents: 250_000,
