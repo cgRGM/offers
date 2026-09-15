@@ -26,7 +26,6 @@
         "@astrojs/vercel": "^11.0.10",
         "@rtloffers/auth": "workspace:*",
         "@rtloffers/db": "workspace:*",
-        "@varlock/astro-integration": "1.4.1",
         "astro": "^7.3.1",
         "better-auth": "catalog:",
         "drizzle-orm": "^0.45.2",
@@ -535,8 +534,6 @@
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.4.0", "", {}, "sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ=="],
-
-    "@varlock/astro-integration": ["@varlock/astro-integration@1.4.1", "", { "peerDependencies": { "@varlock/cloudflare-integration": "^1.5.1", "astro": ">=4", "varlock": "^1.18.0" }, "optionalPeers": ["@varlock/cloudflare-integration"] }, "sha512-Vd6EksXzFpfrXetHrnt77wZzEK9zVMAMnIMEXwwgpIchGcNS9TJ6wo9oNWRmIlBBdT09f16qmWlM4bN59XfVGQ=="],
 
     "@varlock/native-helper-darwin": ["@varlock/native-helper-darwin@1.18.0", "", { "os": "darwin" }, "sha512-O/Wn7G97N9RhdHrMNmDJtqH86+1vCKTzkThW7ICghvBtJslWAY4tpfDb32/AIh8OHOkIoHHmQ90ak6uovbZ2rw=="],
 

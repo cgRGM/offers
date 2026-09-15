@@ -15,7 +15,6 @@
     "@astrojs/vercel": "^11.0.10",
     "@rtloffers/auth": "workspace:*",
     "@rtloffers/db": "workspace:*",
-    "@varlock/astro-integration": "1.4.1",
     "astro": "^7.3.1",
     "better-auth": "catalog:",
     "drizzle-orm": "^0.45.2",
