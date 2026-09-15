@@ -115,7 +115,7 @@ if (isMissing) {
                 <p class="eyebrow">03 · The options</p>
                 <h2 id="pricing-heading">Choose what fits.</h2>
               </div>
-              <p class="section-intro">The one-time price covers the website build. The monthly fee covers maintenance after launch: updates, fixes, and keeping the site current.</p>
+              <p class="section-intro">The one-time price covers the build. Monthly pricing covers hosting, maintenance, updates, and improvements over time.</p>
             </div>
             <div class="pricing-switcher" role="tablist" aria-label="Choose a plan">
               {tiers.map(([tierName, tier]) => (
@@ -144,13 +144,13 @@ if (isMissing) {
                 >
                   {tierName === "manage" && <p class="tier-badge">Most chosen</p>}
                   <p class="tier-name">{tier.label}</p>
-                  <p class="price-label">One-time website build</p>
-                  <h3>{tierName === "grow" ? "From " : ""}{formatCurrency(tier.totalCents)}</h3>
+                  <p class="price-label">{tierName === "grow" ? "One-time website + app build" : "One-time website build"}</p>
+                  <h3>{formatCurrency(tier.totalCents)}</h3>
                   <p class="tier-subtitle">{formatCurrency(tier.depositCents)} deposit today</p>
                   <div class="tier-rule"></div>
-                  <p class="monthly-label">Monthly maintenance</p>
+                  <p class="monthly-label">Monthly hosting + maintenance</p>
                   <p class="monthly-price">{formatCurrency(tier.monthlyCents)}<span>/ month</span></p>
-                  <p class="monthly-description">Updates, fixes, and routine upkeep after launch.</p>
+                  <p class="monthly-description">{tier.monthlyDescription}</p>
                   <ul>
                     {tier.bullets.map((bullet) => <li>{bullet}</li>)}
                   </ul>
@@ -165,7 +165,7 @@ if (isMissing) {
                 </article>
               ))}
             </div>
-            <p class="pricing-note">Monthly maintenance begins 30 days after your initial payment. Deposit balances are invoiced separately.</p>
+            <p class="pricing-note">Monthly hosting and maintenance begin 30 days after your initial payment. Deposit balances are invoiced separately.</p>
           </section>
 
           <section class="callout-section">
