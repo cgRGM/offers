@@ -163,7 +163,7 @@ input:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: 80px;
-  align-items: end;
+  align-items: start;
   min-height: calc(100vh - 66px);
   padding: 120px 0 96px;
 }
