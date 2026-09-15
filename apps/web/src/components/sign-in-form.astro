@@ -1,0 +1,67 @@
+<div class="auth-card">
+  <div class="auth-card-heading">
+    <p class="eyebrow">Rocktown Labs · Internal</p>
+    <h1>Sign in to offers.</h1>
+    <p>Private workspace for reviewing proposals and payments.</p>
+  </div>
+
+  <form id="signin-form" class="auth-form">
+    <div class="field-group">
+      <label for="email">Email address</label>
+    <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@rocktownlabs.com" />
+    </div>
+    <div class="field-group">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Your password" />
+    </div>
+    <p id="form-error" class="form-status" aria-live="polite"></p>
+    <button class="button button-primary button-wide" type="submit">Sign in</button>
+  </form>
+
+  <a class="back-link" href="/">← Back to Rocktown Labs Offers</a>
+</div>
+
+<script>
+  import { authClient } from "../lib/auth-client";
+
+  const form = document.querySelector("#signin-form");
+  const formError = document.querySelector("#form-error");
+  const submitButton = form?.querySelector("button[type='submit']");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(submitButton instanceof HTMLButtonElement)) {return;}
+    const email = form.elements.namedItem("email");
+    const password = form.elements.namedItem("password");
+    if (!(email instanceof HTMLInputElement) || !(password instanceof HTMLInputElement)) {return;}
+
+    formError?.classList.remove("is-visible");
+    submitButton.disabled = true;
+    submitButton.textContent = "Signing in…";
+
+    try {
+      await authClient.signIn.email(
+        { email: email.value, password: password.value },
+        {
+          onError: (context) => {
+            if (formError) {
+              formError.textContent = context.error.message || "Sign in failed. Please try again.";
+              formError.classList.add("is-visible");
+            }
+          },
+          onSuccess: () => {
+            window.location.href = "/dashboard";
+          },
+        },
+      );
+    } catch {
+      if (formError) {
+        formError.textContent = "Sign in failed. Please try again.";
+        formError.classList.add("is-visible");
+      }
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "Sign in";
+    }
+  });
+</script>

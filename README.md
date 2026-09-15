@@ -1,6 +1,6 @@
-# rtloffers
+# Rocktown Labs Offers
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Astro, Self, and more.
+Private, personalized offer pages for Rocktown Labs prospects. Each offer lives at `offers.rocktownlabs.com/{slug}`, is gated by the prospect’s email address, and can send visitors to Stripe Checkout or the configured Google booking link.
 
 ## Features
 
@@ -9,7 +9,9 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
+- **Authentication** - Better Auth, restricted to the configured admin email
+- **Payments** - Stripe Checkout, customer creation, deposits, full payment, balance invoices, and delayed monthly subscriptions
+- **Offer API** - Bearer-authenticated creation endpoint for agent workflows
 - **Turborepo** - Optimized monorepo build system
 - **Oxlint** - Oxlint + Oxfmt (linting & formatting)
 - **Husky** - Git hooks for code quality
@@ -22,14 +24,16 @@ First, install the dependencies:
 bun install
 ```
 
-## Database Setup
+## Local setup
 
 This project uses PostgreSQL with Drizzle ORM.
 
 1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
+2. Update `apps/web/.env` with the values in `apps/web/.env.schema`.
+3. Set `OFFERS_BASE_URL` to the deployed offers domain and `DEFAULT_BOOKING_LINK` to the Google booking URL.
+4. Generate a long random value for `PAGE_SECRET`. The agent handoff key can be generated from `/dashboard` after signing in; the first key is shown once for copying into the agent's secure vault.
 
-3. Apply the schema to your database:
+Apply the schema to your database:
 
 ```bash
 bun run db:push
@@ -42,6 +46,29 @@ bun run dev
 ```
 
 Open [http://localhost:4321](http://localhost:4321) in your browser to see the fullstack application.
+
+## Stripe setup
+
+Add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to the web app environment. Point a Stripe webhook at `/api/stripe/webhook` and enable these events:
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed`
+
+The app creates Stripe Customers during checkout. After a successful setup or deposit payment, the webhook saves the payment method, creates the monthly subscription with a 30-day trial, and—when the deposit path was selected—creates and sends a balance invoice due in 30 days.
+
+## Agent handoff
+
+The agent only needs the deployed base URL and the current agent handoff key generated in `/dashboard`. Create an offer with:
+
+```bash
+curl -X POST "$OFFERS_BASE_URL/api/offers" \
+  -H "Authorization: Bearer $OFFERS_API_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"slug":"tcs-midtown","businessName":"T C’s Midtown","contactEmail":"tcsmidtown@conwaycorp.net","demoUrl":"https://t-c-s-midtown-demo.vercel.app"}'
+```
+
+The dashboard is available at `/dashboard` after signing in with the configured admin account. Archiving an offer makes its public page return 404. A prospect’s decline is recorded in the dashboard and shows the prospect a confirmation page instead of the offer.
 
 ## Environment Configuration
 

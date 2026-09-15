@@ -1,72 +1,210 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Layout from "../layouts/layout.astro";
+import { isAdminUser } from "../lib/admin";
+import { getAgentSecretStatus } from "../lib/agent-secret";
+import { formatCurrency, OFFER_TIERS } from "../lib/offer-tiers";
+import { listOffers } from "../lib/offers";
+import { getDb } from "../services";
+
+if (!isAdminUser(Astro.locals.user)) {
+  // oxlint-disable-next-line unicorn/prefer-module
+  return Astro.redirect("/login");
+}
+
+const offers = await listOffers(getDb());
+const agentSecret = await getAgentSecretStatus(getDb());
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(date);
 ---
 
-<Layout title="Dashboard - rtloffers">
-  <div id="dashboard-content" class="hidden">
-    <main class="mx-auto max-w-4xl px-4 py-8">
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-8">
-        <h1 class="text-3xl font-bold text-white mb-6">Dashboard</h1>
-        
-        <div class="space-y-4">
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400">Welcome back,</p>
-            <p id="user-name" class="text-xl font-medium text-white">Loading...</p>
-          </div>
-          
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400 mb-2">Email</p>
-            <p id="user-email" class="text-white">Loading...</p>
-          </div>
+<Layout title="Dashboard · Rocktown Labs Offers">
+  <main class="dashboard-shell">
+    <div class="dashboard-heading">
+      <div>
+        <p class="eyebrow">Rocktown Labs · Internal</p>
+        <h1>Offers dashboard.</h1>
+        <p>Review every private offer in one place.</p>
+      </div>
+      <div class="dashboard-user">
+        <span>{Astro.locals.user?.name}</span>
+        <a href="/api/auth/sign-out" data-sign-out>Sign out</a>
+      </div>
+    </div>
 
+    <section class="dashboard-summary" aria-label="Offer summary">
+      <div><span>Total offers</span><strong>{offers.length}</strong></div>
+      <div><span>Paid</span><strong>{offers.filter((offer) => offer.paid).length}</strong></div>
+      <div><span>Needs review</span><strong>{offers.filter((offer) => !offer.paid && !offer.archived && !offer.declined).length}</strong></div>
+    </section>
 
+    <section class="integration-card" aria-labelledby="agent-access-heading">
+      <div class="integration-card-copy">
+        <p class="eyebrow">Agent access</p>
+        <h2 id="agent-access-heading">Create the handoff key.</h2>
+        <p>Give your prospecting agent this key to create private offers through the API. It is shown only once, and rotating it immediately invalidates the previous key.</p>
+        <div class="integration-status">
+          <span class:list={["status-pill", agentSecret ? "status-paid" : "status-muted"]}>{agentSecret ? "Active" : "Not configured"}</span>
+          {agentSecret && <span>Created {formatDate(agentSecret.createdAt)} · {agentSecret.secretPrefix}…</span>}
         </div>
       </div>
-    </main>
-  </div>
+      <div class="integration-card-action">
+        <button class="button button-primary" type="button" data-generate-agent-secret>{agentSecret ? "Rotate agent key" : "Generate agent key"}</button>
+        <p>Store the key in your agent’s secure vault. Rocktown Labs cannot show it again after this screen.</p>
+      </div>
+    </section>
 
-  <div id="loading" class="flex h-[calc(100vh-4rem)] items-center justify-center">
-    <p class="text-neutral-400">Loading...</p>
-  </div>
+    <section class="agent-secret-result" data-agent-secret-result hidden aria-labelledby="agent-secret-result-heading">
+      <p class="eyebrow">Copy this now</p>
+      <h2 id="agent-secret-result-heading">Your new agent key.</h2>
+      <div class="agent-secret-value">
+        <code data-agent-secret-value></code>
+        <button class="text-button" type="button" data-copy-agent-secret>Copy key</button>
+      </div>
+      <p data-agent-secret-status>Keep this key private. It will not be displayed again.</p>
+    </section>
 
-  <div id="redirect" class="hidden flex h-[calc(100vh-4rem)] items-center justify-center">
-    <p class="text-neutral-400">Redirecting to login...</p>
-  </div>
+    <dialog class="confirmation-dialog" data-rotation-dialog aria-labelledby="rotation-dialog-heading">
+      <p class="eyebrow">Rotate handoff key</p>
+      <h2 id="rotation-dialog-heading">The current key will stop working.</h2>
+      <p>Only continue if you are ready to replace the key saved in your agent’s secure vault.</p>
+      <div class="confirmation-actions">
+        <button class="button button-outline" type="button" data-cancel-rotation>Keep current key</button>
+        <button class="button button-primary" type="button" data-confirm-rotation>Generate new key</button>
+      </div>
+    </dialog>
+
+    <section class="dashboard-list" aria-labelledby="offers-heading">
+      <div class="dashboard-list-heading">
+        <h2 id="offers-heading">All offers</h2>
+        <span>{offers.length === 1 ? "1 offer" : `${offers.length} offers`}</span>
+      </div>
+      {offers.length === 0 ? (
+        <div class="empty-state">
+          <p class="eyebrow">Nothing here yet</p>
+          <h3>Your agent-created offers will appear here.</h3>
+        </div>
+      ) : (
+        <div class="offer-table-wrap">
+          <table class="offer-table">
+            <thead>
+              <tr><th>Business</th><th>Created</th><th>Status</th><th>Offer</th><th><span class="sr-only">Actions</span></th></tr>
+            </thead>
+            <tbody>
+              {offers.map((offer) => {
+                const status = offer.archived ? "Archived" : offer.declined ? "Declined" : offer.paid ? `Paid · ${offer.paidTier ?? ""}` : "Awaiting payment";
+                const statusClass = offer.archived ? "status-muted" : offer.declined ? "status-declined" : offer.paid ? "status-paid" : "status-pending";
+                const paidTier = offer.paidTier && offer.paidTier in OFFER_TIERS ? OFFER_TIERS[offer.paidTier as keyof typeof OFFER_TIERS] : null;
+                return (
+                  <tr>
+                    <td>
+                      <strong>{offer.businessName}</strong>
+                      <span>{offer.contactEmail}</span>
+                    </td>
+                    <td>{formatDate(offer.createdAt)}</td>
+                    <td><span class:list={["status-pill", statusClass]}>{status}</span>{paidTier && <small>{formatCurrency(paidTier.monthlyCents)}/mo starts after 30 days</small>}</td>
+                    <td><a class="table-link" href={`/${offer.slug}`} target="_blank" rel="noopener">/{offer.slug} ↗</a></td>
+                    <td>
+                      {!offer.archived && <button class="archive-button" type="button" data-slug={offer.slug}>Archive</button>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+    <p id="dashboard-status" class="form-status" aria-live="polite"></p>
+  </main>
 </Layout>
 
 <script>
-  import { authClient } from "../lib/auth-client";
+  const dashboardStatus = document.querySelector("#dashboard-status");
+  const archiveButtons = document.querySelectorAll(".archive-button");
+  const generateAgentSecretButton = document.querySelector("[data-generate-agent-secret]");
+  const agentSecretResult = document.querySelector("[data-agent-secret-result]");
+  const agentSecretValue = document.querySelector("[data-agent-secret-value]");
+  const copyAgentSecretButton = document.querySelector("[data-copy-agent-secret]");
+  const rotationDialog = document.querySelector("[data-rotation-dialog]");
+  const cancelRotationButton = document.querySelector("[data-cancel-rotation]");
+  const confirmRotationButton = document.querySelector("[data-confirm-rotation]");
+  let generatedAgentSecret = "";
 
-  const dashboardContent = document.getElementById("dashboard-content")!;
-  const loading = document.getElementById("loading")!;
-  const redirect = document.getElementById("redirect")!;
-  const userName = document.getElementById("user-name")!;
-  const userEmail = document.getElementById("user-email")!;
+  const requestAgentSecret = async () => {
+    if (!(generateAgentSecretButton instanceof HTMLButtonElement)) {return;}
+    const wasRotation = generateAgentSecretButton.textContent?.includes("Rotate") ?? false;
 
-  async function init() {
+    generateAgentSecretButton.disabled = true;
+    generateAgentSecretButton.textContent = "Generating…";
+
     try {
-      const { data: session } = await authClient.getSession();
-      
-      if (!session?.user) {
-        loading.classList.add("hidden");
-        redirect.classList.remove("hidden");
-        window.location.href = "/login";
-        return;
-      }
-
-      userName.textContent = session.user.name || "User";
-      userEmail.textContent = session.user.email || "";
-
-
-
-      loading.classList.add("hidden");
-      dashboardContent.classList.remove("hidden");
+      const response = await fetch("/api/agent-secret", { method: "POST" });
+      const payload = await response.json() as { secret?: string; error?: string };
+      if (!response.ok || !payload.secret) {throw new Error(payload.error ?? "Couldn’t generate the agent key.");}
+      generatedAgentSecret = payload.secret;
+      if (agentSecretValue) {agentSecretValue.textContent = generatedAgentSecret;}
+      agentSecretResult?.removeAttribute("hidden");
+      generateAgentSecretButton.textContent = "Rotate agent key";
     } catch (error) {
-      loading.classList.add("hidden");
-      redirect.classList.remove("hidden");
-      window.location.href = "/login";
+      if (dashboardStatus) {dashboardStatus.textContent = error instanceof Error ? error.message : "Couldn’t generate the agent key.";}
+      generateAgentSecretButton.disabled = false;
+      generateAgentSecretButton.textContent = wasRotation ? "Rotate agent key" : "Generate agent key";
     }
+  };
+
+  generateAgentSecretButton?.addEventListener("click", async () => {
+    const isRotation = generateAgentSecretButton.textContent?.includes("Rotate");
+    if (isRotation && rotationDialog instanceof HTMLDialogElement) {
+      rotationDialog.showModal();
+      return;
+    }
+    await requestAgentSecret();
+  });
+
+  cancelRotationButton?.addEventListener("click", () => {
+    if (rotationDialog instanceof HTMLDialogElement) {rotationDialog.close();}
+  });
+
+  confirmRotationButton?.addEventListener("click", async () => {
+    if (rotationDialog instanceof HTMLDialogElement) {rotationDialog.close();}
+    await requestAgentSecret();
+  });
+
+  copyAgentSecretButton?.addEventListener("click", async () => {
+    if (!(copyAgentSecretButton instanceof HTMLButtonElement) || !generatedAgentSecret) {return;}
+    await navigator.clipboard.writeText(generatedAgentSecret);
+    copyAgentSecretButton.textContent = "Copied";
+    window.setTimeout(() => {copyAgentSecretButton.textContent = "Copy key";}, 1800);
+  });
+
+  for (const button of archiveButtons) {
+    button.addEventListener("click", async () => {
+      if (!(button instanceof HTMLButtonElement)) {return;}
+      const {slug} = button.dataset;
+      if (!slug) {return;}
+      button.disabled = true;
+      button.textContent = "Archiving…";
+
+      try {
+        const response = await fetch("/api/offers/archive", {
+          body: JSON.stringify({ slug }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        });
+        if (!response.ok) {throw new Error("Couldn’t archive this offer.");}
+        window.location.reload();
+      } catch (error) {
+        if (dashboardStatus) {dashboardStatus.textContent = error instanceof Error ? error.message : "Couldn’t archive this offer.";}
+        button.disabled = false;
+        button.textContent = "Archive";
+      }
+    });
   }
 
-  init();
+  const signOutLink = document.querySelector("[data-sign-out]");
+  signOutLink?.addEventListener("click", async (event) => {
+    event.preventDefault();
+    await fetch("/api/auth/sign-out", { method: "POST" });
+    window.location.href = "/login";
+  });
 </script>

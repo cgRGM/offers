@@ -1,25 +1,28 @@
 ---
 import "../styles/global.css";
-import Header from "../components/Header.astro";
+import Header from "../components/header.astro";
 
 interface Props {
+  robots?: string;
+  showHeader?: boolean;
   title?: string;
 }
 
-const { title = "rtloffers" } = Astro.props;
+const { robots = "index, follow", showHeader = true, title = "Rocktown Labs Offers" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content={robots} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-neutral-950 text-white">
-    <Header />
+  <body>
+    {showHeader && <Header />}
     <slot />
   </body>
 </html>

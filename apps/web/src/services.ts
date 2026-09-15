@@ -1,11 +1,10 @@
 import { createAuth } from "@rtloffers/auth";
-import { type Database, createDb } from "@rtloffers/db";
+import { createDb } from "@rtloffers/db";
+import type { Database } from "@rtloffers/db";
 
 import { env } from "./env.server";
 
 const db = createDb(env);
 
-export function getDb(): Database {
-  return db;
-}
+export const getDb = (): Database => db;
 export const auth = createAuth(env, db);

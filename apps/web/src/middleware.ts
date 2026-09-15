@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
+import { isAdminUser } from "./lib/admin";
 import { auth } from "./services";
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -7,7 +8,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     headers: context.request.headers,
   });
 
-  if (isAuthed) {
+  if (isAuthed && isAdminUser(isAuthed.user)) {
     context.locals.user = isAuthed.user;
     context.locals.session = isAuthed.session;
   } else {

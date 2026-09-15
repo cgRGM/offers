@@ -1,0 +1,18 @@
+---
+import { isAdminUser } from "../lib/admin";
+
+const isAdmin = isAdminUser(Astro.locals.user);
+---
+
+<header class="site-header">
+  <a class="brand-lockup" href="/" aria-label="Rocktown Labs Offers home">
+    <span class="brand-mark">RL</span>
+    <span>
+      <span class="brand-name">Rocktown Labs</span>
+      <span class="brand-section">Offers</span>
+    </span>
+  </a>
+  <nav class="site-nav" aria-label="Main navigation">
+    {isAdmin ? <a href="/dashboard">Dashboard</a> : <a href="/login">Sign in</a>}
+  </nav>
+</header>

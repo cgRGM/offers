@@ -1,28 +1,23 @@
 ---
-import Layout from "../layouts/Layout.astro";
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+import Layout from "../layouts/layout.astro";
 ---
 
-<Layout title="rtloffers">
-  <div class="container mx-auto max-w-3xl px-4 py-2">
-    <pre class="overflow-x-auto font-mono text-sm text-white">{TITLE_TEXT}</pre>
-    <div class="grid gap-6">
-    </div>
-  </div>
+<Layout title="Rocktown Labs Offers">
+  <main class="marketing-shell">
+    <section class="marketing-hero">
+      <p class="eyebrow">Rocktown Labs · Private offers</p>
+      <h1>Thoughtful websites for businesses ready to move.</h1>
+      <p class="hero-copy">
+        This space is for personalized website offers from Rocktown Labs. If you received a link from us,
+        open that link and enter the email address it was sent to.
+      </p>
+      <a class="button button-primary" href="https://www.rocktownlabs.com" target="_blank" rel="noopener">
+        Visit Rocktown Labs
+      </a>
+    </section>
+    <aside class="marketing-note">
+      <span class="note-number">01</span>
+      <p>Every offer is built around a real business, a clear scope, and a practical next step.</p>
+    </aside>
+  </main>
 </Layout>
-

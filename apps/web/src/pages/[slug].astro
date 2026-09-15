@@ -1,0 +1,280 @@
+---
+import Layout from "../layouts/layout.astro";
+import { env } from "../env.server";
+import { hasOfferAccess } from "../lib/offer-access";
+import { formatCurrency, OFFER_TIER_ORDER, OFFER_TIERS } from "../lib/offer-tiers";
+import { findOfferBySlug } from "../lib/offers";
+import { getDb } from "../services";
+
+const slug = Astro.params.slug ?? "";
+const found = await findOfferBySlug(getDb(), slug);
+const isMissing = !found || found.archived;
+const hasAccess = Boolean(found && !isMissing && hasOfferAccess(Astro.cookies.get("offer_access")?.value, slug, env.PAGE_SECRET));
+const paidQuery = Astro.url.searchParams.get("paid") === "1";
+const bookingLink = found?.calLink ?? env.DEFAULT_BOOKING_LINK;
+const tiers = OFFER_TIER_ORDER.map((tierName) => [tierName, OFFER_TIERS[tierName]] as const);
+
+if (isMissing) {
+  Astro.response.status = 404;
+}
+---
+
+<Layout
+  title={found ? `${found.businessName} · Rocktown Labs` : "Offer not found · Rocktown Labs"}
+  robots="noindex, nofollow, noarchive"
+  showHeader={false}
+>
+  <main class="offer-shell" data-offer-slug={slug}>
+    <header class="offer-header">
+      <a class="offer-brand" href="/">
+        <span class="brand-mark">RL</span>
+        <span>Rocktown Labs <em>Offers</em></span>
+      </a>
+      <span class="offer-header-note">Built in the lab · Little Rock, AR</span>
+    </header>
+
+    {
+      isMissing ? (
+        <section class="message-card">
+          <p class="eyebrow">Offer unavailable</p>
+          <h1>We couldn’t find that offer.</h1>
+          <p>The link may have expired or been removed. Please reach out to the person who sent it.</p>
+        </section>
+      ) : !hasAccess ? (
+        <section class="gate-card">
+          <p class="eyebrow">A private offer for {found.businessName}</p>
+          <h1>This offer was made for a specific business.</h1>
+          <p>Enter the email address this offer was sent to and we’ll show you the details.</p>
+          <form id="access-form" class="access-form">
+            <label for="access-email">Your email address</label>
+            <div class="input-row">
+              <input id="access-email" name="email" type="email" autocomplete="email" placeholder="you@yourbusiness.com" required />
+              <button class="button button-primary" type="submit">View my offer</button>
+            </div>
+            <p id="access-status" class="form-status" aria-live="polite"></p>
+          </form>
+          <p class="small-note">We only use your email to verify this private page.</p>
+        </section>
+      ) : found.declined ? (
+        <section class="message-card">
+          <p class="eyebrow">Thanks for letting us know</p>
+          <h1>We’ve recorded your decision.</h1>
+          <p>No further action is needed. If you’d like to reconnect later, you can reach us at hello@rocktownlabs.com.</p>
+        </section>
+      ) : (
+        <>
+          <section class="offer-hero">
+            <div>
+              <p class="eyebrow">A private proposal from Rocktown Labs</p>
+              <h1>{found.businessName}<br /><span>Your new website is ready.</span></h1>
+              <p class="hero-copy">A clear, fast website built around how your customers find and contact you.</p>
+              <a class="text-link" href="#options">See your options <span aria-hidden="true">↓</span></a>
+            </div>
+            <div class="hero-aside">
+              <span class="aside-label">Prepared for</span>
+              <strong>{found.businessName}</strong>
+              <span class="aside-label">Offer link</span>
+              <span class="aside-slug">/{found.slug}</span>
+            </div>
+          </section>
+
+          {paidQuery && !found.paid && (
+            <div class="notice notice-warm" role="status">Payment submitted — we’re confirming it now.</div>
+          )}
+          {found.paid && (
+            <div class="notice notice-success" role="status">
+              Payment received — we’ll be in touch within one business day.
+            </div>
+          )}
+
+          <section class="demo-section" aria-labelledby="demo-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">01 · The preview</p>
+                <h2 id="demo-heading">Take a look around.</h2>
+              </div>
+              <a class="button button-outline" href={found.demoUrl} target="_blank" rel="noopener">Open the full demo ↗</a>
+            </div>
+            <div class="demo-frame-wrap">
+              <iframe
+                class="demo-frame"
+                src={found.demoUrl}
+                title={`${found.businessName} website demo`}
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+              ></iframe>
+              <p class="demo-fallback">If the preview doesn’t load, <a href={found.demoUrl} target="_blank" rel="noopener">open the full demo in a new tab</a>.</p>
+            </div>
+          </section>
+
+          <section class="two-column-section" aria-labelledby="included-heading">
+            <div>
+              <p class="eyebrow">02 · The work</p>
+              <h2 id="included-heading">What you’re getting.</h2>
+            </div>
+            <ul class="included-list">
+              <li><span>01</span><strong>Mobile-first site</strong><p>Looks right on the phone your customers actually use.</p></li>
+              <li><span>02</span><strong>Useful from day one</strong><p>Hours, map, click-to-call, and the details people need.</p></li>
+              <li><span>03</span><strong>Live in 1–2 weeks</strong><p>A focused scope keeps the work moving.</p></li>
+              <li><span>04</span><strong>You own it</strong><p>Your site and domain stay yours.</p></li>
+            </ul>
+          </section>
+
+          <section id="options" class="pricing-section" aria-labelledby="pricing-heading">
+            <div class="section-heading pricing-heading">
+              <div>
+                <p class="eyebrow">03 · The options</p>
+                <h2 id="pricing-heading">Choose what fits.</h2>
+              </div>
+              <p class="section-intro">The one-time price covers the website build. The monthly fee covers maintenance after launch: updates, fixes, and keeping the site current.</p>
+            </div>
+            <div class="pricing-grid">
+              {tiers.map(([tierName, tier]) => (
+                <article class:list={["tier-card", tierName === "manage" && "tier-card-featured"]}>
+                  {tierName === "manage" && <p class="tier-badge">Most chosen</p>}
+                  <p class="tier-name">{tier.label}</p>
+                  <p class="price-label">One-time website build</p>
+                  <h3>{tierName === "grow" ? "From " : ""}{formatCurrency(tier.totalCents)}</h3>
+                  <p class="tier-subtitle">{formatCurrency(tier.depositCents)} deposit today</p>
+                  <div class="tier-rule"></div>
+                  <p class="monthly-label">Monthly maintenance</p>
+                  <p class="monthly-price">{formatCurrency(tier.monthlyCents)}<span>/ month</span></p>
+                  <p class="monthly-description">Updates, fixes, and routine upkeep after launch.</p>
+                  <ul>
+                    {tier.bullets.map((bullet) => <li>{bullet}</li>)}
+                  </ul>
+                  <div class="tier-actions">
+                    <button class="button button-primary checkout-button" type="button" data-payment-type="deposit" data-tier={tierName}>
+                      Claim with {formatCurrency(tier.depositCents)}
+                    </button>
+                    <button class="button button-quiet checkout-button" type="button" data-payment-type="full" data-tier={tierName}>
+                      Pay in full · {formatCurrency(tier.totalCents)}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p class="pricing-note">Monthly maintenance begins 30 days after your initial payment. Deposit balances are invoiced separately.</p>
+          </section>
+
+          <section class="callout-section">
+            <div>
+              <p class="eyebrow">04 · The next step</p>
+              <h2>Prefer to talk first?</h2>
+              <p>Happy to walk through the demo, answer questions, and make sure the scope fits.</p>
+            </div>
+            {bookingLink ? (
+              <a class="button button-primary" href={bookingLink} target="_blank" rel="noopener">Book a time ↗</a>
+            ) : (
+              <span class="button button-disabled">Booking link coming soon</span>
+            )}
+          </section>
+
+          {!found.paid && (
+            <section class="decline-section">
+              <p>Not the right time or fit?</p>
+              <button id="decline-button" class="text-button" type="button">Decline this offer</button>
+              <p id="decline-status" class="form-status" aria-live="polite"></p>
+            </section>
+          )}
+        </>
+      )
+    }
+
+    <footer class="offer-footer">
+      <span>Built by Rocktown Labs</span>
+      <a href="https://www.rocktownlabs.com" target="_blank" rel="noopener">rocktownlabs.com ↗</a>
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  const offerShell = document.querySelector(".offer-shell");
+  const offerSlug = offerShell instanceof HTMLElement ? offerShell.dataset.offerSlug ?? "" : "";
+  const accessForm = document.querySelector("#access-form");
+  const accessStatus = document.querySelector("#access-status");
+
+  accessForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!(form instanceof HTMLFormElement)) {return;}
+    const email = form.elements.namedItem("email");
+    if (!(email instanceof HTMLInputElement)) {return;}
+    const submitButton = form.querySelector("button");
+    if (!(submitButton instanceof HTMLButtonElement)) {return;}
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Checking…";
+    if (accessStatus) {accessStatus.textContent = "";}
+
+    try {
+      const response = await fetch("/api/offers/access", {
+        body: JSON.stringify({ email: email.value, slug: offerSlug }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      const result = await response.json();
+      if (!response.ok) {throw new Error(result.error || "We couldn’t verify that email.");}
+      window.location.reload();
+    } catch (error) {
+      if (accessStatus) {accessStatus.textContent = error instanceof Error ? error.message : "We couldn’t verify that email.";}
+      submitButton.disabled = false;
+      submitButton.textContent = "View my offer";
+    }
+  });
+
+  const declineButton = document.querySelector("#decline-button");
+  const declineStatus = document.querySelector("#decline-status");
+  declineButton?.addEventListener("click", async () => {
+    if (!(declineButton instanceof HTMLButtonElement)) {return;}
+    declineButton.disabled = true;
+    declineButton.textContent = "Recording…";
+
+    try {
+      const response = await fetch("/api/offers/decline", {
+        body: JSON.stringify({ slug: offerSlug }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      if (!response.ok) {throw new Error("We couldn’t record that right now.");}
+      window.location.reload();
+    } catch (error) {
+      if (declineStatus) {declineStatus.textContent = error instanceof Error ? error.message : "We couldn’t record that right now.";}
+      declineButton.disabled = false;
+      declineButton.textContent = "Decline this offer";
+    }
+  });
+
+  const checkoutButtons = document.querySelectorAll(".checkout-button");
+  for (const button of checkoutButtons) {
+    button.addEventListener("click", async () => {
+      if (!(button instanceof HTMLButtonElement)) {return;}
+      const {tier} = button.dataset;
+      const {paymentType} = button.dataset;
+      if (!tier || !paymentType) {return;}
+
+      for (const item of checkoutButtons) {
+        if (item instanceof HTMLButtonElement) {item.disabled = true;}
+      }
+      button.textContent = "Opening secure checkout…";
+
+      try {
+        const response = await fetch("/api/checkout", {
+          body: JSON.stringify({ paymentType, slug: offerSlug, tier }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        });
+        const result = await response.json();
+        if (!response.ok || typeof result.url !== "string") {throw new Error(result.error || "Checkout is unavailable.");}
+        window.location.href = result.url;
+      } catch (error) {
+        if (declineStatus) {declineStatus.textContent = error instanceof Error ? error.message : "Checkout is unavailable.";}
+        for (const item of checkoutButtons) {
+          if (item instanceof HTMLButtonElement) {item.disabled = false;}
+        }
+        button.textContent = paymentType === "deposit" ? "Try deposit checkout again" : "Try full payment again";
+      }
+    });
+  }
+</script>

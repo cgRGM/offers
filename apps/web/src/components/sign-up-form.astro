@@ -1,0 +1,72 @@
+<div class="auth-card">
+  <div class="auth-card-heading">
+    <p class="eyebrow">One-time setup</p>
+    <h1>Create the admin account.</h1>
+    <p>This workspace is restricted to the configured Rocktown Labs admin email.</p>
+  </div>
+
+  <form id="signup-form" class="auth-form">
+    <div class="field-group">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" autocomplete="name" required placeholder="CG Stewart" />
+    </div>
+    <div class="field-group">
+      <label for="email">Admin email</label>
+    <input id="email" name="email" type="email" autocomplete="email" required placeholder="your-admin-email@rocktownlabs.com" />
+    </div>
+    <div class="field-group">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters" />
+    </div>
+    <p id="form-error" class="form-status" aria-live="polite"></p>
+    <button class="button button-primary button-wide" type="submit">Create account</button>
+  </form>
+
+  <a class="back-link" href="/login">Already have an account? Sign in</a>
+</div>
+
+<script>
+  import { authClient } from "../lib/auth-client";
+
+  const form = document.querySelector("#signup-form");
+  const formError = document.querySelector("#form-error");
+  const submitButton = form?.querySelector("button[type='submit']");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(submitButton instanceof HTMLButtonElement)) {return;}
+    const name = form.elements.namedItem("name");
+    const email = form.elements.namedItem("email");
+    const password = form.elements.namedItem("password");
+    if (!(name instanceof HTMLInputElement) || !(email instanceof HTMLInputElement) || !(password instanceof HTMLInputElement)) {return;}
+
+    formError?.classList.remove("is-visible");
+    submitButton.disabled = true;
+    submitButton.textContent = "Creating account…";
+
+    try {
+      await authClient.signUp.email(
+        { email: email.value, name: name.value, password: password.value },
+        {
+          onError: (context) => {
+            if (formError) {
+              formError.textContent = context.error.message || "Account creation failed. Please try again.";
+              formError.classList.add("is-visible");
+            }
+          },
+          onSuccess: () => {
+            window.location.href = "/dashboard";
+          },
+        },
+      );
+    } catch {
+      if (formError) {
+        formError.textContent = "Account creation failed. Please try again.";
+        formError.classList.add("is-visible");
+      }
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "Create account";
+    }
+  });
+</script>
