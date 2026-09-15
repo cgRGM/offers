@@ -117,9 +117,31 @@ if (isMissing) {
               </div>
               <p class="section-intro">The one-time price covers the website build. The monthly fee covers maintenance after launch: updates, fixes, and keeping the site current.</p>
             </div>
+            <div class="pricing-switcher" role="tablist" aria-label="Choose a plan">
+              {tiers.map(([tierName, tier]) => (
+                <button
+                  class:list={["pricing-switcher-button", tierName === "launch" && "is-active"]}
+                  type="button"
+                  role="tab"
+                  id={`pricing-tab-${tierName}`}
+                  aria-controls={`tier-${tierName}`}
+                  aria-selected={tierName === "launch"}
+                  data-pricing-tab={tierName}
+                  tabindex={tierName === "launch" ? 0 : -1}
+                >
+                  {tier.label}
+                </button>
+              ))}
+            </div>
             <div class="pricing-grid">
               {tiers.map(([tierName, tier]) => (
-                <article class:list={["tier-card", tierName === "manage" && "tier-card-featured"]}>
+                <article
+                  class:list={["tier-card", tierName === "manage" && "tier-card-featured", tierName === "launch" && "is-selected"]}
+                  id={`tier-${tierName}`}
+                  role="tabpanel"
+                  aria-labelledby={`pricing-tab-${tierName}`}
+                  data-pricing-panel={tierName}
+                >
                   {tierName === "manage" && <p class="tier-badge">Most chosen</p>}
                   <p class="tier-name">{tier.label}</p>
                   <p class="price-label">One-time website build</p>
@@ -202,6 +224,52 @@ if (isMissing) {
       declineButton.textContent = "Decline this offer";
     }
   });
+
+  const pricingGrid = document.querySelector(".pricing-grid");
+  const pricingTabs = document.querySelectorAll<HTMLButtonElement>("[data-pricing-tab]");
+  const pricingPanels = document.querySelectorAll<HTMLElement>("[data-pricing-panel]");
+
+  if (pricingGrid && pricingTabs.length > 0) {
+    pricingGrid.classList.add("is-interactive");
+
+    const selectPricingTier = (selectedTab: HTMLButtonElement) => {
+      const selectedTier = selectedTab.dataset.pricingTab;
+      if (!selectedTier) {return;}
+
+      for (const tab of pricingTabs) {
+        const isSelected = tab === selectedTab;
+        tab.classList.toggle("is-active", isSelected);
+        tab.setAttribute("aria-selected", String(isSelected));
+        tab.tabIndex = isSelected ? 0 : -1;
+      }
+
+      for (const panel of pricingPanels) {
+        panel.classList.toggle("is-selected", panel.dataset.pricingPanel === selectedTier);
+      }
+    };
+
+    for (const tab of pricingTabs) {
+      tab.addEventListener("click", () => selectPricingTier(tab));
+      tab.addEventListener("keydown", (event) => {
+        const { key } = event;
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(key)) {return;}
+        event.preventDefault();
+
+        const currentIndex = [...pricingTabs].indexOf(tab);
+        let nextIndex = (currentIndex - 1 + pricingTabs.length) % pricingTabs.length;
+        if (key === "Home") {
+          nextIndex = 0;
+        } else if (key === "End") {
+          nextIndex = pricingTabs.length - 1;
+        } else if (key === "ArrowRight") {
+          nextIndex = (currentIndex + 1) % pricingTabs.length;
+        }
+        const nextTab = pricingTabs[nextIndex];
+        nextTab?.focus();
+        if (nextTab) {selectPricingTier(nextTab);}
+      });
+    }
+  }
 
   const checkoutButtons = document.querySelectorAll(".checkout-button");
   for (const button of checkoutButtons) {

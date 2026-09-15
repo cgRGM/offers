@@ -603,6 +603,10 @@ input:focus {
   margin-top: 44px;
 }
 
+.pricing-switcher {
+  display: none;
+}
+
 .tier-card {
   position: relative;
   display: flex;
@@ -1158,6 +1162,51 @@ input:focus {
   .dashboard-summary,
   .integration-card {
     grid-template-columns: 1fr;
+  }
+
+  .pricing-switcher {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-top: 28px;
+    padding: 4px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+  }
+
+  .pricing-switcher-button {
+    min-height: 40px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition:
+      background 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .pricing-switcher-button:hover:not(.is-active) {
+    color: var(--cyan);
+  }
+
+  .pricing-switcher-button.is-active {
+    border-color: var(--cyan);
+    background: var(--cyan);
+    color: #001012;
+  }
+
+  .pricing-grid {
+    margin-top: 12px;
+  }
+
+  .pricing-grid.is-interactive .tier-card:not(.is-selected) {
+    display: none;
   }
 
   .tier-card {
