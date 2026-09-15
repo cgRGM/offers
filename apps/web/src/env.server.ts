@@ -9,7 +9,6 @@ interface ServerEnv {
   NODE_ENV: NodeEnvironment;
   OFFERS_API_SECRET?: string;
   OFFERS_BASE_URL: string;
-  PAGE_SECRET: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
 }
@@ -43,7 +42,6 @@ export const env: ServerEnv = {
       : "development",
   OFFERS_API_SECRET: optionalEnv("OFFERS_API_SECRET"),
   OFFERS_BASE_URL: requiredEnv("OFFERS_BASE_URL"),
-  PAGE_SECRET: requiredEnv("PAGE_SECRET"),
   STRIPE_SECRET_KEY: requiredEnv("STRIPE_SECRET_KEY"),
   STRIPE_WEBHOOK_SECRET: requiredEnv("STRIPE_WEBHOOK_SECRET"),
 };

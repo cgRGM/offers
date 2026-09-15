@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/layout.astro";
 import { env } from "../env.server";
-import { hasOfferAccess } from "../lib/offer-access";
 import { formatCurrency, OFFER_TIER_ORDER, OFFER_TIERS } from "../lib/offer-tiers";
 import { findOfferBySlug } from "../lib/offers";
 import { getDb } from "../services";
@@ -9,7 +8,6 @@ import { getDb } from "../services";
 const slug = Astro.params.slug ?? "";
 const found = await findOfferBySlug(getDb(), slug);
 const isMissing = !found || found.archived;
-const hasAccess = Boolean(found && !isMissing && hasOfferAccess(Astro.cookies.get("offer_access")?.value, slug, env.PAGE_SECRET));
 const paidQuery = Astro.url.searchParams.get("paid") === "1";
 const bookingLink = found?.calLink ?? env.DEFAULT_BOOKING_LINK;
 const tiers = OFFER_TIER_ORDER.map((tierName) => [tierName, OFFER_TIERS[tierName]] as const);
@@ -39,21 +37,6 @@ if (isMissing) {
           <p class="eyebrow">Offer unavailable</p>
           <h1>We couldn’t find that offer.</h1>
           <p>The link may have expired or been removed. Please reach out to the person who sent it.</p>
-        </section>
-      ) : !hasAccess ? (
-        <section class="gate-card">
-          <p class="eyebrow">A private offer for {found.businessName}</p>
-          <h1>This offer was made for a specific business.</h1>
-          <p>Enter the email address this offer was sent to and we’ll show you the details.</p>
-          <form id="access-form" class="access-form">
-            <label for="access-email">Your email address</label>
-            <div class="input-row">
-              <input id="access-email" name="email" type="email" autocomplete="email" placeholder="you@yourbusiness.com" required />
-              <button class="button button-primary" type="submit">View my offer</button>
-            </div>
-            <p id="access-status" class="form-status" aria-live="polite"></p>
-          </form>
-          <p class="small-note">We only use your email to verify this private page.</p>
         </section>
       ) : found.declined ? (
         <section class="message-card">
@@ -192,37 +175,6 @@ if (isMissing) {
 <script>
   const offerShell = document.querySelector(".offer-shell");
   const offerSlug = offerShell instanceof HTMLElement ? offerShell.dataset.offerSlug ?? "" : "";
-  const accessForm = document.querySelector("#access-form");
-  const accessStatus = document.querySelector("#access-status");
-
-  accessForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    if (!(form instanceof HTMLFormElement)) {return;}
-    const email = form.elements.namedItem("email");
-    if (!(email instanceof HTMLInputElement)) {return;}
-    const submitButton = form.querySelector("button");
-    if (!(submitButton instanceof HTMLButtonElement)) {return;}
-
-    submitButton.disabled = true;
-    submitButton.textContent = "Checking…";
-    if (accessStatus) {accessStatus.textContent = "";}
-
-    try {
-      const response = await fetch("/api/offers/access", {
-        body: JSON.stringify({ email: email.value, slug: offerSlug }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const result = await response.json();
-      if (!response.ok) {throw new Error(result.error || "We couldn’t verify that email.");}
-      window.location.reload();
-    } catch (error) {
-      if (accessStatus) {accessStatus.textContent = error instanceof Error ? error.message : "We couldn’t verify that email.";}
-      submitButton.disabled = false;
-      submitButton.textContent = "View my offer";
-    }
-  });
 
   const declineButton = document.querySelector("#decline-button");
   const declineStatus = document.querySelector("#decline-status");

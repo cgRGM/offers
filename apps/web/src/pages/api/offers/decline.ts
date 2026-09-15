@@ -1,12 +1,10 @@
 import type { APIRoute } from "astro";
 
-import { env } from "../../../env.server";
 import { json } from "../../../lib/http";
-import { hasOfferAccess, OFFER_ACCESS_COOKIE } from "../../../lib/offer-access";
 import { findOfferBySlug, updateOffer } from "../../../lib/offers";
 import { getDb } from "../../../services";
 
-export const POST: APIRoute = async ({ cookies, request }) => {
+export const POST: APIRoute = async ({ request }) => {
   let input: { slug?: string };
   try {
     input = (await request.json()) as { slug?: string };
@@ -15,14 +13,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
   }
 
   const slug = input.slug?.trim();
-  if (
-    !slug ||
-    !hasOfferAccess(
-      cookies.get(OFFER_ACCESS_COOKIE)?.value,
-      slug,
-      env.PAGE_SECRET
-    )
-  ) {
+  if (!slug) {
     return json({ error: "Unauthorized" }, 401);
   }
 

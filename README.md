@@ -1,6 +1,6 @@
 # Rocktown Labs Offers
 
-Private, personalized offer pages for Rocktown Labs prospects. Each offer lives at `offers.rocktownlabs.com/{slug}`, is gated by the prospect’s email address, and can send visitors to Stripe Checkout or the configured Google booking link.
+Private, personalized offer pages for Rocktown Labs prospects. Each offer lives at `offers.rocktownlabs.com/{slug}` and can send visitors to Stripe Checkout or the configured Google booking link. The offer URL is the access credential.
 
 ## Features
 
@@ -31,7 +31,7 @@ This project uses PostgreSQL with Drizzle ORM.
 1. Make sure you have a PostgreSQL database set up.
 2. Update `apps/web/.env` with the values in `apps/web/.env.schema`.
 3. Set `OFFERS_BASE_URL` to the deployed offers domain and `DEFAULT_BOOKING_LINK` to the Google booking URL.
-4. Generate a long random value for `PAGE_SECRET`. The agent handoff key can be generated from `/dashboard` after signing in; the first key is shown once for copying into the agent's secure vault.
+4. The agent handoff key can be generated from `/dashboard` after signing in; the first key is shown once for copying into the agent's secure vault.
 
 Apply the schema to your database:
 
@@ -68,7 +68,7 @@ curl -X POST "$OFFERS_BASE_URL/api/offers" \
   -d '{"slug":"tcs-midtown","businessName":"T C’s Midtown","contactEmail":"tcsmidtown@conwaycorp.net","demoUrl":"https://t-c-s-midtown-demo.vercel.app"}'
 ```
 
-The dashboard is available at `/dashboard` after signing in with the configured admin account. Archiving an offer makes its public page return 404. A prospect’s decline is recorded in the dashboard and shows the prospect a confirmation page instead of the offer.
+The dashboard is available at `/dashboard` after signing in with the configured admin account. Anyone with an active offer link can view it, pay, book a time, or decline it. Archiving an offer makes its public page return 404. A prospect’s decline is recorded in the dashboard and shows the visitor a confirmation page instead of the offer.
 
 ## Environment Configuration
 

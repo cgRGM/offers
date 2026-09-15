@@ -174,7 +174,6 @@ input:focus-visible {
 
 .marketing-hero h1,
 .offer-hero h1,
-.gate-card h1,
 .message-card h1,
 .dashboard-heading h1,
 .auth-card h1 {
@@ -303,7 +302,6 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
-.gate-card,
 .message-card {
   max-width: 680px;
   margin: 15vh auto 18vh;
@@ -312,12 +310,10 @@ input:focus-visible {
   background: rgba(8, 13, 15, 0.9);
 }
 
-.gate-card h1,
 .message-card h1 {
   font-size: clamp(42px, 6vw, 70px);
 }
 
-.gate-card > p:not(.eyebrow),
 .message-card > p:not(.eyebrow) {
   max-width: 520px;
   margin: 0;
@@ -326,11 +322,6 @@ input:focus-visible {
   line-height: 1.55;
 }
 
-.access-form {
-  margin-top: 36px;
-}
-
-.access-form label,
 .field-group label {
   display: block;
   margin-bottom: 9px;
@@ -339,11 +330,6 @@ input:focus-visible {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-}
-
-.input-row {
-  display: flex;
-  gap: 8px;
 }
 
 input {
@@ -365,21 +351,12 @@ input:focus {
   border-color: var(--cyan);
 }
 
-.input-row input {
-  min-width: 0;
-}
-
-.small-note,
 .pricing-note,
 .demo-fallback {
   color: var(--muted);
   font-family: var(--mono);
   font-size: 9px;
   line-height: 1.6;
-}
-
-.small-note {
-  margin-top: 14px;
 }
 
 .form-status {
@@ -1155,25 +1132,14 @@ input:focus {
     padding: 86px 0 80px;
   }
 
-  .gate-card,
   .message-card,
   .auth-card {
     margin-top: 10vh;
     padding: 34px 26px;
   }
 
-  .gate-card,
   .message-card {
     margin-bottom: 12vh;
-  }
-
-  .input-row {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .input-row .button {
-    width: 100%;
   }
 
   .demo-frame {

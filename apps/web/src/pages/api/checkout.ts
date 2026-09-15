@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { env } from "../../env.server";
 import { json, parseJson } from "../../lib/http";
-import { hasOfferAccess, OFFER_ACCESS_COOKIE } from "../../lib/offer-access";
 import { OFFER_TIERS } from "../../lib/offer-tiers";
 import type { PaymentType } from "../../lib/offer-tiers";
 import { findOfferBySlug, updateOffer } from "../../lib/offers";
@@ -32,20 +31,10 @@ const getAmount = (
   return paymentType === "full" ? config.totalCents : config.depositCents;
 };
 
-export const POST: APIRoute = async ({ cookies, request }) => {
+export const POST: APIRoute = async ({ request }) => {
   const input = checkoutSchema.safeParse(await parseJson(request));
   if (!input.success) {
     return json({ error: "Invalid checkout request" }, 400);
-  }
-
-  if (
-    !hasOfferAccess(
-      cookies.get(OFFER_ACCESS_COOKIE)?.value,
-      input.data.slug,
-      env.PAGE_SECRET
-    )
-  ) {
-    return json({ error: "Unauthorized" }, 401);
   }
 
   const database = getDb();
