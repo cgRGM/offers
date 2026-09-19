@@ -8,10 +8,23 @@ import Layout from "../layouts/layout.astro";
       <p class="eyebrow">Rocktown Labs · Private offers</p>
       <h1>Thoughtful websites for businesses ready to move.</h1>
       <p class="hero-copy">
-        This space is for personalized website offers from Rocktown Labs. If you received a link from us,
-        open that link and enter the email address it was sent to.
+        This space is for personalized website offers from Rocktown Labs. Enter the email address
+        your offer was sent to, and we'll take you right to it.
       </p>
-      <a class="button button-primary" href="https://www.rocktownlabs.com" target="_blank" rel="noopener">
+      <form id="offer-lookup" class="lookup-form" novalidate>
+        <label class="sr-only" for="lookup-email">Email address</label>
+        <input
+          id="lookup-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="you@yourbusiness.com"
+          required
+        />
+        <button class="button button-primary" type="submit">Find my offer</button>
+      </form>
+      <p id="lookup-error" class="lookup-error" role="alert" hidden></p>
+      <a class="button button-secondary" href="https://rocktownlabs.app" target="_blank" rel="noopener">
         Visit Rocktown Labs
       </a>
     </section>
@@ -21,3 +34,74 @@ import Layout from "../layouts/layout.astro";
     </aside>
   </main>
 </Layout>
+
+<script>
+  const form = document.getElementById("offer-lookup") as HTMLFormElement | null;
+  const emailInput = document.getElementById("lookup-email") as HTMLInputElement | null;
+  const errorEl = document.getElementById("lookup-error") as HTMLParagraphElement | null;
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (errorEl) {
+      errorEl.hidden = true;
+      errorEl.textContent = "";
+    }
+    const email = emailInput?.value.trim().toLowerCase() ?? "";
+    if (!email || !email.includes("@")) {
+      if (errorEl) {
+        errorEl.textContent = "Please enter a valid email address.";
+        errorEl.hidden = false;
+      }
+      return;
+    }
+    try {
+      const response = await fetch("/api/offers/lookup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = (await response.json()) as { slug?: string; error?: string };
+      if (!response.ok || !data.slug) {
+        throw new Error(data.error ?? "No offer found for this email.");
+      }
+      window.location.href = `/${data.slug}`;
+    } catch (error) {
+      if (errorEl) {
+        errorEl.textContent =
+          error instanceof Error ? error.message : "Something went wrong. Please try again.";
+        errorEl.hidden = false;
+      }
+    }
+  });
+</script>
+
+<style>
+  .lookup-form {
+    display: flex;
+    gap: 0.75rem;
+    margin: 1.5rem 0 1rem;
+    flex-wrap: wrap;
+  }
+  .lookup-form input {
+    flex: 1;
+    min-width: 220px;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border, #2a3434);
+    background: var(--bg-card, #0d1212);
+    color: inherit;
+    font-size: 1rem;
+  }
+  .lookup-error {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+</style>

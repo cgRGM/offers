@@ -11,6 +11,15 @@ export const findOfferBySlug = async (database: Database, slug: string) => {
   return result ?? null;
 };
 
+export const findOfferByEmail = async (database: Database, email: string) => {
+  const [result] = await database
+    .select()
+    .from(offer)
+    .where(eq(offer.contactEmail, email.toLowerCase().trim()))
+    .limit(1);
+  return result ?? null;
+};
+
 export const listOffers = (database: Database) =>
   database.select().from(offer).orderBy(desc(offer.createdAt));
 
