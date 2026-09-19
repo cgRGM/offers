@@ -1,0 +1,31 @@
+{
+  // Root config for Cloudflare Builds: the dashboard deploy command runs
+  // `npx wrangler deploy` from the repo root, so wrangler needs a config here.
+  // Paths are relative to this file; the canonical deploy config lives at
+  // apps/web/wrangler.deploy.jsonc — keep the two in sync.
+  "$schema": "./apps/web/node_modules/wrangler/config-schema.json",
+  "name": "rocktownlabs-offers",
+  "main": "./apps/web/worker-entry.mjs",
+  "compatibility_date": "2026-09-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./apps/web/dist/client"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    {
+      "pattern": "offers.rocktownlabs.app",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "ADMIN_EMAIL": "cg@rocktownlabs.com",
+    "BETTER_AUTH_URL": "https://offers.rocktownlabs.app",
+    "DEFAULT_BOOKING_LINK": "https://calendar.app.google/Ho6N3frPXiGrMQbe6",
+    "NODE_ENV": "production",
+    "OFFERS_BASE_URL": "https://offers.rocktownlabs.app"
+  }
+}
