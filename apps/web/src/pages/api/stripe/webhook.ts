@@ -207,6 +207,10 @@ const fulfillCheckout = async (session: StripeClient.Checkout.Session) => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!env.STRIPE_WEBHOOK_SECRET) {
+    return json({ error: "Stripe webhook is not configured" }, 503);
+  }
+
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
     return json({ error: "Missing signature" }, 400);

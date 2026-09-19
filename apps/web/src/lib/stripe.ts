@@ -6,7 +6,12 @@ let stripe: StripeClient | undefined;
 
 export const getStripe = () => {
   if (!stripe) {
-    stripe = new StripeClient(env.STRIPE_SECRET_KEY, {
+    const secretKey = env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("Stripe is not configured");
+    }
+
+    stripe = new StripeClient(secretKey, {
       apiVersion: "2026-08-26.dahlia",
       appInfo: {
         name: "Rocktown Labs Offers",

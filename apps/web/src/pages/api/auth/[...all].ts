@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
 
-import { auth } from "../../../services";
+import { getAuth } from "../../../services";
 
-export const ALL: APIRoute = (ctx) => auth.handler(ctx.request);
+export const ALL: APIRoute = (ctx) => getAuth().handler(ctx.request);

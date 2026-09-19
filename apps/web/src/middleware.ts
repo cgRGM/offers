@@ -1,10 +1,10 @@
 import { defineMiddleware } from "astro:middleware";
 
 import { isAdminUser } from "./lib/admin";
-import { auth } from "./services";
+import { getAuth } from "./services";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const isAuthed = await auth.api.getSession({
+  const isAuthed = await getAuth().api.getSession({
     headers: context.request.headers,
   });
 

@@ -290,7 +290,7 @@ if (isMissing) {
           headers: { "content-type": "application/json" },
           method: "POST",
         });
-        const result = await response.json();
+        const result = (await response.json()) as {error?: string; url?: string};
         if (!response.ok || typeof result.url !== "string") {throw new Error(result.error || "Checkout is unavailable.");}
         window.location.href = result.url;
       } catch (error) {
